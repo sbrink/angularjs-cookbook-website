@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS Cookbook → Easy filtering with the filter filter</title>
+  <link href="/assets/stylesheets/application.css" rel="stylesheet" type="text/css" />
+  <script src="/assets/javascripts/application.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-39010393-4', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  <nav class="navbar navbar-light bg-transparent">
+  <div class="container">
+    <a class="navbar-brand" href="/">AngularJS Cookbook</a>
+    <!--<form class="form-inline navbar-form pull-right">-->
+      <!--<input class="form-control" type="text" placeholder="Search">-->
+      <!--<button class="btn btn-success-outline" type="submit">Search</button>-->
+    <!--</form>-->
+  </div>
+</nav>
+
+
+  <div class="header-bg" style="background-color: #3F51B5;"></div>
+
+  <div class="container">
+    <header>
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-xs-12 col-md-8">
+          <h1 class="page-title" style="margin-top: 0px;">
+            <a href="/">Easy filtering with the filter filter</a>
+          </h1>
+          <p class="lead" style="color: #ccc;"></p>
+          <p style="color: #aaa;">by Sascha Brink</p>
+
+          <a target="_blank" class="btn btn-success" href="https://leanpub.com/angularjs-cookbook">Buy this book</a>
+        </div>
+        <div class="hidden-xs hidden-sm col-md-4 text-center">
+          <a target="_blank" href="https://leanpub.com/angularjs-cookbook"><img class="img-shadowed" src="/assets/images/cover-sm.jpg" /></a>
+        </div>
+      </div>
+    </header>
+
+    <br>
+
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-9">
+        
+<h2 id="problem">Problem</h2>
+
+<p>You need a simple filter in your view that only concerns your current view/controller.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>This issue confuses a lot of people. AngularJS has a concept called filters. With that you can transform a string or a
+collection by using a pipe <code>|</code>. But one of the default filters, which AngularJS brings with it,
+is also called filter. This filter filter is what we use here.</p>
+
+<p>The filter filter is a general purpose filter, which can take strings, options and functions as parameters. It has an
+optional third argument, which does exact matches for strings and objects.</p>
+
+<p>In the following examples we use this list (in JSON notation) as example:</p>
+
+<pre><code>[
+  { "name": "Bill", "age": 42, "gender": "male" },
+  { "name": "John", "age": 52, "gender": "male" },
+  { "name": "Anne", "age": 19, "gender": "female" },
+  { "name": "Phil", "age": 21, "gender": "male" },
+  { "name": "Mary", "age": 23, "gender": "female" }
+]
+</code></pre>
+
+<h3 id="string">String</h3>
+
+<p>If you use a string as input field, you’re matching all objects containing this string. If you take the list of users,
+you can type <code>il</code> and it matches B<em>il</em>l and Ph<em>il</em>. If you want exact matches, you should use <code>true</code> as third argument.</p>
+
+<pre><code>&lt;tr ng-repeat="user in users | filter:withString"&gt;
+</code></pre>
+
+<h3 id="object">Object</h3>
+
+<p>If you don’t want to match every attribute in an object, you can use object notation and specify a subset of fields.
+Here we only filter for the gender <em>male</em>. Therefore we use the second parameter to do an exact match. Otherwise we would get
+all rows with fe<em>male</em>, too.</p>
+
+<pre><code>&lt;tr ng-repeat="user in users | filter:{ gender: 'male' }:true"&gt;
+</code></pre>
+
+<p>There is one characteristic in object notation - the <code>$</code> attribute. This is a wildcard like the normal string.</p>
+
+<pre><code>&lt;tr ng-repeat="user in users | filter:{ $: withWildcard, gender: 'female' }"&gt;
+</code></pre>
+
+<h3 id="function">Function</h3>
+
+<p>If you need a more complex filter that is only used in this controller and you don’t want to create a filter on its
+own, you can also pass a function.</p>
+
+<p>The function is evaluated for each element in the collection. So in our example, you would test each single user for a
+ given condition. Here we filter all users that are under 40.</p>
+
+<pre><code>$scope.underForty = function(user) {
+    return user.age &lt; 40;
+};
+
+&lt;tr ng-repeat="user in users | filter:underForty"&gt;
+</code></pre>
+
+
+
+          <h2>Code</h2>
+
+          <!-- Nav tabs -->
+<a class="btn btn-info pull-right" target="_blank" href="/recipes/the-filter-filter/code/">            <span class="fa fa-clone"></span> New window
+</a>
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" href="#tab-result" role="tab" data-toggle="tab">Result</a>
+            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#application-js" role="tab" data-toggle="tab">application.js</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#index-html" role="tab" data-toggle="tab">index.html</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#users-json" role="tab" data-toggle="tab">users.json</a>
+              </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" style="min-height: 300px;">
+            <div role="tabpanel" class="tab-pane active" id="tab-result">
+              <iframe src="code/" id="result"></iframe>
+            </div>
+
+              <div role="tabpanel" class="tab-pane" id="application-js">
+                <pre><code>angular.module(&#x27;cookbookApp&#x27;, [])
+  .controller(&#x27;MainController&#x27;, function($scope, $http) {
+    $http.get(&#x27;users.json&#x27;).then(function(usersResponse) {
+      $scope.users = usersResponse.data;
+    });
+
+    $scope.underForty = function (user) {
+      return user.age &lt; 40;
+    };
+  });</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="index-html">
+                <pre><code>&lt;html ng-app=&quot;cookbookApp&quot;&gt;
+&lt;head&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;ajax.googleapis.com&#x2F;ajax&#x2F;libs&#x2F;angularjs&#x2F;1.3.0&#x2F;angular.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;application.js&quot;&gt;&lt;&#x2F;script&gt;
+&lt;&#x2F;head&gt;
+&lt;body ng-controller=&quot;MainController&quot;&gt;
+  &lt;h2&gt;With string:&lt;&#x2F;h2&gt;
+  &lt;input type=&quot;text&quot; ng-model=&quot;withString&quot;&#x2F;&gt;
+  &lt;table&gt;
+    &lt;tr ng-repeat=&quot;user in users | filter:withString&quot;&gt;
+      &lt;td ng-bind=&quot;user.name&quot;&gt;&lt;&#x2F;td&gt;
+      &lt;td ng-bind=&quot;user.age&quot;&gt;&lt;&#x2F;td&gt;
+      &lt;td ng-bind=&quot;user.gender&quot;&gt;&lt;&#x2F;td&gt;
+    &lt;&#x2F;tr&gt;
+  &lt;&#x2F;table&gt;
+
+  &lt;h2&gt;With object:&lt;&#x2F;h2&gt;
+  &lt;table&gt;
+    &lt;tr ng-repeat=&quot;user in users | filter:{ gender: &#x27;male&#x27; }:true&quot;&gt;
+      &lt;td ng-bind=&quot;user.name&quot;&gt;&lt;&#x2F;td&gt;
+      &lt;td ng-bind=&quot;user.age&quot;&gt;&lt;&#x2F;td&gt;
+      &lt;td ng-bind=&quot;user.gender&quot;&gt;&lt;&#x2F;td&gt;
+    &lt;&#x2F;tr&gt;
+  &lt;&#x2F;table&gt;
+
+  &lt;h2&gt;With object and wildcard:&lt;&#x2F;h2&gt;
+  &lt;input type=&quot;text&quot; ng-model=&quot;withWildcard&quot;&#x2F;&gt;
+  &lt;table&gt;
+    &lt;tr ng-repeat=&quot;user in users | filter:{ $: withWildcard, gender: &#x27;female&#x27; }&quot;&gt;
+      &lt;td ng-bind=&quot;user.name&quot;&gt;&lt;&#x2F;td&gt;
+      &lt;td ng-bind=&quot;user.age&quot;&gt;&lt;&#x2F;td&gt;
+      &lt;td ng-bind=&quot;user.gender&quot;&gt;&lt;&#x2F;td&gt;
+    &lt;&#x2F;tr&gt;
+  &lt;&#x2F;table&gt;
+
+  &lt;h2&gt;With function:&lt;&#x2F;h2&gt;
+  &lt;table&gt;
+    &lt;tr ng-repeat=&quot;user in users | filter:underForty&quot;&gt;
+      &lt;td ng-bind=&quot;user.name&quot;&gt;&lt;&#x2F;td&gt;
+      &lt;td ng-bind=&quot;user.age&quot;&gt;&lt;&#x2F;td&gt;
+      &lt;td ng-bind=&quot;user.gender&quot;&gt;&lt;&#x2F;td&gt;
+    &lt;&#x2F;tr&gt;
+  &lt;&#x2F;table&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="users-json">
+                <pre><code>[
+  { &quot;name&quot;: &quot;Bill&quot;, &quot;age&quot;: 42, &quot;gender&quot;: &quot;male&quot; },
+  { &quot;name&quot;: &quot;John&quot;, &quot;age&quot;: 52, &quot;gender&quot;: &quot;male&quot; },
+  { &quot;name&quot;: &quot;Anne&quot;, &quot;age&quot;: 19, &quot;gender&quot;: &quot;female&quot; },
+  { &quot;name&quot;: &quot;Phil&quot;, &quot;age&quot;: 21, &quot;gender&quot;: &quot;male&quot; },
+  { &quot;name&quot;: &quot;Mary&quot;, &quot;age&quot;: 23, &quot;gender&quot;: &quot;female&quot; }
+]</code></pre>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <ul class="list-inline">
+      <li><a href="http://angularjs.de/datenschutz" target="_blank">Datenschutz</a></li>
+      <li><a href="http://angularjs.de/impressum" target="_blank">Impressum</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

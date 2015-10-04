@@ -1,0 +1,21 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+  <link rel="stylesheet" ng-href="style.css"/>
+</head>
+<body ng-controller="MainController">
+<table>
+  <tr>
+    <th th-sortable="sort" th-column="name">Name</th>
+    <th th-sortable="sort" th-column="age" >Age</th>
+    <th th-sortable="sort" th-column="gender" th-default>Gender</th>
+  </tr>
+  <tr ng-repeat="user in users | orderBy:sort.column:sort.reverse">
+    <td ng-bind="user.name"></td>
+    <td ng-bind="user.age"></td>
+    <td ng-bind="user.gender"></td>
+  </tr>
+</table>
+</body>
+</html>

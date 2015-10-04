@@ -1,0 +1,229 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS Cookbook → Finding performance bottlenecks with Batarang</title>
+  <link href="/assets/stylesheets/application.css" rel="stylesheet" type="text/css" />
+  <script src="/assets/javascripts/application.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-39010393-4', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  <nav class="navbar navbar-light bg-transparent">
+  <div class="container">
+    <a class="navbar-brand" href="/">AngularJS Cookbook</a>
+    <!--<form class="form-inline navbar-form pull-right">-->
+      <!--<input class="form-control" type="text" placeholder="Search">-->
+      <!--<button class="btn btn-success-outline" type="submit">Search</button>-->
+    <!--</form>-->
+  </div>
+</nav>
+
+
+  <div class="header-bg" style="background-color: #3F51B5;"></div>
+
+  <div class="container">
+    <header>
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-xs-12 col-md-8">
+          <h1 class="page-title" style="margin-top: 0px;">
+            <a href="/">Finding performance bottlenecks with Batarang</a>
+          </h1>
+          <p class="lead" style="color: #ccc;"></p>
+          <p style="color: #aaa;">by Sascha Brink</p>
+
+          <a target="_blank" class="btn btn-success" href="https://leanpub.com/angularjs-cookbook">Buy this book</a>
+        </div>
+        <div class="hidden-xs hidden-sm col-md-4 text-center">
+          <a target="_blank" href="https://leanpub.com/angularjs-cookbook"><img class="img-shadowed" src="/assets/images/cover-sm.jpg" /></a>
+        </div>
+      </div>
+    </header>
+
+    <br>
+
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-9">
+        
+<h2 id="problem">Problem</h2>
+
+<p>You have a lagging application and need a way to investigate, which part causes your performance issues.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>You can do some benchmarking with <a target="_blank" href="https://chrome.google
+.com/webstore/detail/angularjs-batarang/ighdmehidhipcmcojjgiloacoafjmpfk">Batarang</a>.</p>
+
+<blockquote class="box information">
+  <p>Batarang is a chrome extension, which was specifically designed for AngularJS developers.</p>
+</blockquote>
+
+<p>With batarang you get a list of all watchers and their relative time spent. To show you how it works, we will sort a list with bogosort. Bogosort is a very inefficient sorting algorithm, which randomizes the order of the
+elements and checks, if the array is now sorted. If not, it randomizes the elements again.</p>
+
+<p>The demo application implements bogosort as a filter:</p>
+
+<pre><code>&lt;html ng-app="cookbookApp"&gt;
+&lt;head&gt;
+  &lt;script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"&gt;&lt;/script&gt;
+  &lt;script src="application.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body ng-controller="MainController"&gt;
+  &lt;button ng-click="addItem()"&gt;Add item&lt;/button&gt;
+  &lt;p&gt;Listing {{items.length}} items.&lt;/p&gt;
+
+  &lt;ul&gt;
+    &lt;li ng-repeat="item in items | bogosort" ng-bind="item"&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<pre><code>angular.module('cookbookApp', [])
+  .filter('bogosort', function(){
+    function shuffle(v) {
+      // http://jsfromhell.com/array/shuffle
+      for(var j, x,
+            i = v.length; i;
+          j = parseInt(Math.random() * i, 10), x = v[--i], v[i] = v[j], v[j] = x
+        );
+      return v;
+    }
+    function isSorted(v){
+      for(var i=1; i&lt;v.length; i++) {
+        if (v[i-1] &gt; v[i]) { return false; }
+      }
+      return true;
+    }
+    return function(input) {
+      var sorted = false;
+      while(sorted === false){
+        input = shuffle(input);
+        sorted = isSorted(input);
+      }
+      return input;
+    };
+  })
+  .controller('MainController', function($scope) {
+    $scope.items = [Math.random(), Math.random(), Math.random()];
+
+    $scope.addItem = function() {
+      $scope.items.push(Math.random());
+    };
+  });
+</code></pre>
+
+<p>Now to measure the performance, you open the performance tab in Batarang and use the features of your application, which are slow. Batarang now sums the time up for each watcher used.</p>
+
+<p>In the following screenshot, you see the result after we added some items to the array.</p>
+
+<p><img src="images/big-picture-finding-performance-bottlenecks-3-items.png" alt="Bogosort with 3 items" /></p>
+
+<p><img src="images/big-picture-finding-performance-bottlenecks-6-items.png" alt="Bogosort with 6 items" /></p>
+
+<p><img src="images/big-picture-finding-performance-bottlenecks-10-items.png" alt="Bogosort with 10 items" /></p>
+
+<p>In the screenshot, you see how the time for the collection increases. With 10 items, it’s 99.8% for the collection watcher. So here’s definitely the bottleneck. Of course, most of the time it’s not that obvious, but it gives you a clue of where to start.</p>
+
+
+
+          <h2>Code</h2>
+
+          <!-- Nav tabs -->
+<a class="btn btn-info pull-right" target="_blank" href="/recipes/finding-performance-bottlenecks/code/">            <span class="fa fa-clone"></span> New window
+</a>
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" href="#tab-result" role="tab" data-toggle="tab">Result</a>
+            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#application-js" role="tab" data-toggle="tab">application.js</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#index-html" role="tab" data-toggle="tab">index.html</a>
+              </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" style="min-height: 300px;">
+            <div role="tabpanel" class="tab-pane active" id="tab-result">
+              <iframe src="code/" id="result"></iframe>
+            </div>
+
+              <div role="tabpanel" class="tab-pane" id="application-js">
+                <pre><code>angular.module(&#x27;cookbookApp&#x27;, [])
+  .filter(&#x27;bogosort&#x27;, function(){
+    function shuffle(v) {
+      &#x2F;&#x2F; http:&#x2F;&#x2F;jsfromhell.com&#x2F;array&#x2F;shuffle
+      for(var j, x,
+            i = v.length; i;
+          j = parseInt(Math.random() * i, 10), x = v[--i], v[i] = v[j], v[j] = x
+        );
+      return v;
+    }
+    function isSorted(v){
+      for(var i=1; i&lt;v.length; i++) {
+        if (v[i-1] &gt; v[i]) { return false; }
+      }
+      return true;
+    }
+    return function(input) {
+      var sorted = false;
+      while(sorted === false){
+        input = shuffle(input);
+        sorted = isSorted(input);
+      }
+      return input;
+    };
+  })
+  .controller(&#x27;MainController&#x27;, function($scope) {
+    $scope.items = [Math.random(), Math.random(), Math.random()];
+
+    $scope.addItem = function() {
+      $scope.items.push(Math.random());
+    };
+  });</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="index-html">
+                <pre><code>&lt;html ng-app=&quot;cookbookApp&quot;&gt;
+&lt;head&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;ajax.googleapis.com&#x2F;ajax&#x2F;libs&#x2F;angularjs&#x2F;1.3.0&#x2F;angular.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;application.js&quot;&gt;&lt;&#x2F;script&gt;
+&lt;&#x2F;head&gt;
+&lt;body ng-controller=&quot;MainController&quot;&gt;
+  &lt;button ng-click=&quot;addItem()&quot;&gt;Add item&lt;&#x2F;button&gt;
+  &lt;p&gt;Listing {{items.length}} items.&lt;&#x2F;p&gt;
+
+  &lt;ul&gt;
+    &lt;li ng-repeat=&quot;item in items | bogosort&quot; ng-bind=&quot;item&quot;&gt;&lt;&#x2F;li&gt;
+  &lt;&#x2F;ul&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;</code></pre>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <ul class="list-inline">
+      <li><a href="http://angularjs.de/datenschutz" target="_blank">Datenschutz</a></li>
+      <li><a href="http://angularjs.de/impressum" target="_blank">Impressum</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+</head>
+<body ng-controller="MainController">
+  <button ng-click="addItem()">Add item</button>
+  <p>Listing {{items.length}} items.</p>
+
+  <ul>
+    <li ng-repeat="item in items | bogosort" ng-bind="item"></li>
+  </ul>
+</body>
+</html>

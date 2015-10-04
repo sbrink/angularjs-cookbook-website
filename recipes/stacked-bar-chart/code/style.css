@@ -1,0 +1,12 @@
+.stacked-bar-chart {
+  overflow: hidden;
+  margin: 10px 0;
+  height: 20px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+
+.stacked-bar   { float: left; height: 100%; }
+.stacked-bar-0 { background-color: #bb0000; }
+.stacked-bar-1 { background-color: #00bb00; }
+.stacked-bar-2 { background-color: #0000bb; }

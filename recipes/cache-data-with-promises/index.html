@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS Cookbook → How to cache data with promises</title>
+  <link href="/assets/stylesheets/application.css" rel="stylesheet" type="text/css" />
+  <script src="/assets/javascripts/application.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-39010393-4', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  <nav class="navbar navbar-light bg-transparent">
+  <div class="container">
+    <a class="navbar-brand" href="/">AngularJS Cookbook</a>
+    <!--<form class="form-inline navbar-form pull-right">-->
+      <!--<input class="form-control" type="text" placeholder="Search">-->
+      <!--<button class="btn btn-success-outline" type="submit">Search</button>-->
+    <!--</form>-->
+  </div>
+</nav>
+
+
+  <div class="header-bg" style="background-color: #3F51B5;"></div>
+
+  <div class="container">
+    <header>
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-xs-12 col-md-8">
+          <h1 class="page-title" style="margin-top: 0px;">
+            <a href="/">How to cache data with promises</a>
+          </h1>
+          <p class="lead" style="color: #ccc;"></p>
+          <p style="color: #aaa;">by Sascha Brink</p>
+
+          <a target="_blank" class="btn btn-success" href="https://leanpub.com/angularjs-cookbook">Buy this book</a>
+        </div>
+        <div class="hidden-xs hidden-sm col-md-4 text-center">
+          <a target="_blank" href="https://leanpub.com/angularjs-cookbook"><img class="img-shadowed" src="/assets/images/cover-sm.jpg" /></a>
+        </div>
+      </div>
+    </header>
+
+    <br>
+
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-9">
+        
+<h2 id="problem">Problem</h2>
+
+<p>You want to cache an asynchronous request and always want to work with a promise.
+The fetching of the data from the memory cache is synchronous. If the cache misses, it’s asynchronous.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>The solution is to always return a promise. If the data is cached, we just immediately resolve the promise.
+We show you how to do this very easily.</p>
+
+<h3 id="covert-a-value-to-a-promise">Covert a value to a promise</h3>
+
+<p>The first question is how to convert a cached value into a promise.</p>
+
+<p>A naive solution would be</p>
+
+<pre><code>var deferred = $q.defer();
+deferred.resolve(cachedValue);
+return deferred.promise;
+</code></pre>
+
+<p>Because it’s such a common pattern, AngularJS has a shortcut for it:</p>
+
+<pre><code>$q.when(cachedValue)
+</code></pre>
+
+<blockquote class="box tip">
+  <p><code>$q.when</code> is capable of a lot more, see <a href="/recipes/promises-convert-3rd-party">convert 3rd party promises</a>.</p>
+</blockquote>
+
+<h3 id="promises-all-the-time">Promises all the time</h3>
+
+<p>To always return a promise, we check, if the return value is already cached. If it is, we return a resolved promise with <code>$q.when</code>. If not, we call our promise and on success we’ll cache the result.</p>
+
+<pre><code>if (cache) {
+    return $q.when(cache);
+} else {
+    return promise.then(function(result) {
+        cache = result;
+        return result;
+    });
+}
+</code></pre>
+
+<p>You’ll find a full working example in the code section.</p>
+
+
+
+          <h2>Code</h2>
+
+          <!-- Nav tabs -->
+<a class="btn btn-info pull-right" target="_blank" href="/recipes/cache-data-with-promises/code/">            <span class="fa fa-clone"></span> New window
+</a>
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" href="#tab-result" role="tab" data-toggle="tab">Result</a>
+            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#application-js" role="tab" data-toggle="tab">application.js</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#index-html" role="tab" data-toggle="tab">index.html</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#users-json" role="tab" data-toggle="tab">users.json</a>
+              </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" style="min-height: 300px;">
+            <div role="tabpanel" class="tab-pane active" id="tab-result">
+              <iframe src="code/" id="result"></iframe>
+            </div>
+
+              <div role="tabpanel" class="tab-pane" id="application-js">
+                <pre><code>angular.module(&#x27;cookbookApp&#x27;, [])
+  .controller(&#x27;MainController&#x27;, function($scope, $http, $q) {
+    var cache;
+
+    function userCache() {
+      if (cache) {
+        console.log(&#x27;Loaded data from cache&#x27;);
+        return $q.when(cache);
+      } else {
+        console.log(&#x27;Loaded data from webserver&#x27;);
+        return $http.get(&#x27;users.json&#x27;).then(function(response) {
+          cache = response.data;
+          return response.data;
+        });
+      }
+    }
+
+    $scope.loadUsers = function() {
+      userCache().then(function(users) {
+        $scope.users = users;
+      });
+    };
+
+  });
+
+
+</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="index-html">
+                <pre><code>&lt;html ng-app=&quot;cookbookApp&quot;&gt;
+&lt;head&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;ajax.googleapis.com&#x2F;ajax&#x2F;libs&#x2F;angularjs&#x2F;1.3.0&#x2F;angular.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;application.js&quot;&gt;&lt;&#x2F;script&gt;
+&lt;&#x2F;head&gt;
+&lt;body ng-controller=&quot;MainController&quot;&gt;
+  &lt;ul&gt;
+    &lt;li ng-repeat=&quot;user in users&quot; ng-bind=&quot;user&quot;&gt;&lt;&#x2F;li&gt;
+  &lt;&#x2F;ul&gt;
+  &lt;button ng-click=&quot;loadUsers()&quot;&gt;Load users&lt;&#x2F;button&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="users-json">
+                <pre><code>[ &quot;Bill&quot;, &quot;John&quot;, &quot;Anne&quot;, &quot;Phil&quot;, &quot;Mary&quot; ]</code></pre>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <ul class="list-inline">
+      <li><a href="http://angularjs.de/datenschutz" target="_blank">Datenschutz</a></li>
+      <li><a href="http://angularjs.de/impressum" target="_blank">Impressum</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

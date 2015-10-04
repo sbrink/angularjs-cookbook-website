@@ -1,0 +1,14 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-sanitize.min.js"></script>
+  <script src="application.js"></script>
+  <link rel="stylesheet" ng-href="style.css"/>
+</head>
+<body ng-controller="MainController">
+  <input ng-model="search" placeholder="Search" />
+  <ul>
+    <li ng-repeat="item in items | filter:search" ng-bind-html="item | highlight:search"></li>
+  </ul>
+</body>
+</html>

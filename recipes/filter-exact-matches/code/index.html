@@ -1,0 +1,17 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+</head>
+<body ng-controller="MainController">
+
+  <a href ng-click="personFilter.gender = undefined">Show all</a>
+  <a href ng-click="personFilter.gender = 'male'">Show males</a>
+  <a href ng-click="personFilter.gender = 'female'">Show females</a>
+  <ul>
+    <li ng-repeat="person in people | filter:personFilter:true">
+      {{person.name}} ({{person.gender}})</li>
+  </ul>
+
+</body>
+</html>

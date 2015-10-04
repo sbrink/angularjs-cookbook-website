@@ -1,0 +1,21 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+  <link rel="stylesheet" ng-href="style.css"/>
+</head>
+<body>
+  <div ng-controller="MainController">
+    <button ng-click="addNotification(false)">Timed notification</button>
+    <button ng-click="addNotification(true)">Sticky notification</button>
+  </div>
+  <ul class="notifications" ng-controller="NotificationsController">
+    {{notificationList}}
+    <li ng-repeat="notification in notifications.getList()"
+        class="animate-repeat">
+      <a href ng-bind="notification.text"
+         ng-click="notifications.remove(notification.id)"></a>
+    </li>
+  </ul>
+</body>
+</html>

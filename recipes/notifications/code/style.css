@@ -1,0 +1,16 @@
+.notifications {
+  margin: 0;
+  position: absolute;
+  right: 0; bottom: 0;
+  list-style: none;
+}
+.notifications li a {
+  display: block;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9; color: #333;
+  font-size: 80%;
+  text-decoration: none;
+  padding: 20px 10px;
+  text-align: center;
+  width: 200px;
+}

@@ -1,0 +1,21 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+</head>
+<body ng-controller="MainController">
+  <button ng-click="selectAllTasks()"
+      ng-disabled="completedTasksCount == tasks.length">Select all</button>
+  <button ng-click="deselectAllTasks()"
+      ng-disabled="completedTasksCount == 0">Select none</button>
+  <button ng-click="invertAllTasks()">Invert</button>
+
+  <ul>
+    <li ng-repeat="task in tasks">
+      <input type="checkbox" ng-model="task.completed"/> {{ task.title }}
+    </li>
+  </ul>
+
+  <p>Completed: {{ completedTasksCount }}</p>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS Cookbook → Build a date select</title>
+  <link href="/assets/stylesheets/application.css" rel="stylesheet" type="text/css" />
+  <script src="/assets/javascripts/application.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-39010393-4', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  <nav class="navbar navbar-light bg-transparent">
+  <div class="container">
+    <a class="navbar-brand" href="/">AngularJS Cookbook</a>
+    <!--<form class="form-inline navbar-form pull-right">-->
+      <!--<input class="form-control" type="text" placeholder="Search">-->
+      <!--<button class="btn btn-success-outline" type="submit">Search</button>-->
+    <!--</form>-->
+  </div>
+</nav>
+
+
+  <div class="header-bg" style="background-color: #3F51B5;"></div>
+
+  <div class="container">
+    <header>
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-xs-12 col-md-8">
+          <h1 class="page-title" style="margin-top: 0px;">
+            <a href="/">Build a date select</a>
+          </h1>
+          <p class="lead" style="color: #ccc;"></p>
+          <p style="color: #aaa;">by Sascha Brink</p>
+
+          <a target="_blank" class="btn btn-success" href="https://leanpub.com/angularjs-cookbook">Buy this book</a>
+        </div>
+        <div class="hidden-xs hidden-sm col-md-4 text-center">
+          <a target="_blank" href="https://leanpub.com/angularjs-cookbook"><img class="img-shadowed" src="/assets/images/cover-sm.jpg" /></a>
+        </div>
+      </div>
+    </header>
+
+    <br>
+
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-9">
+        
+<h2 id="problem">Problem</h2>
+
+<p>You want to give the user a date selection with month, day and year.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>For this purpose we build a custom directive, which takes and an object <code>date</code>. The directive uses two-way-databinding to sync the select fields with the attribute <code>model</code>.</p>
+
+<p>We will call our directive <code>dateselect</code> and will use the following html code for it. We use two directives to show the
+ synchronization between them:</p>
+
+<pre><code>&lt;html ng-app="cookbookApp"&gt;
+&lt;head&gt;
+  &lt;script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"&gt;&lt;/script&gt;
+  &lt;script src="application.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body ng-controller="MainController"&gt;
+  &lt;dateselect model="current"&gt;&lt;/dateselect&gt;&lt;br/&gt;
+  &lt;dateselect model="current"&gt;&lt;/dateselect&gt;&lt;br/&gt;
+
+  {{current | date:'yyyy-MM-dd'}}
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>We initialize the <code>current</code> variable with the current date in the controller.</p>
+
+<pre><code>angular.module('cookbookApp', [])
+  .directive('dateselect', function() {
+    return {
+      restrict: 'E',
+      template:
+        '&lt;select ng-model="date.month" ' +
+          'ng-options="month for month in months"&gt;&lt;/select&gt;' +
+          '&lt;select ng-model="date.day" ' +
+          'ng-options="day for day in days"&gt;&lt;/select&gt;' +
+          '&lt;select ng-model="date.year" ' +
+          'ng-options="year for year in years"&gt;&lt;/select&gt;',
+      scope : {
+        model: '='
+      },
+      controller: function($scope) {
+        var i;
+        $scope.date = {};
+
+        $scope.days = [];
+        for (i = 1; i &lt;= 31; i++) { $scope.days.push(i); }
+
+        $scope.months = [];
+        for (i = 1; i &lt;= 12; i++) { $scope.months.push(i); }
+
+        $scope.years = [];
+        for (i = 1980; i &lt;= (new Date().getFullYear()); i++) {
+          $scope.years.push(i);
+        }
+
+        $scope.$watch('model', function(newDate) {
+          $scope.date.month = newDate.getMonth()+1;
+          $scope.date.day = newDate.getDate();
+          $scope.date.year = newDate.getFullYear();
+        }, true);
+
+        $scope.$watch('date', function(newDate) {
+          $scope.model.setDate(newDate.day);
+          $scope.model.setMonth(newDate.month-1);
+          $scope.model.setFullYear(newDate.year);
+        }, true);
+      }
+    };
+  })
+  .controller('MainController', function($scope) {
+    $scope.current = new Date();
+  });
+
+
+</code></pre>
+
+<p>The directive works as follows:</p>
+
+<p>We set <code>restrict</code> the <em>E</em> (for element), to allow dateselect as tag. We use an isolated scope with <code>model</code> as our
+communicator to the outside world. In the template we simply draw three select fields for month, day and year. We generate the necessary options in the controller.</p>
+
+<p>Because we can fully rely on the template, we just use the controller and don’t need the link function here .</p>
+
+<p>The controller is that part, where the whole work is done. Here we have three loops for days,
+months and years for the select boxes. Furthermore we initialize an object <code>date</code> to hold the selected month,
+day and year.</p>
+
+<p>Additionally, we have two watches. One to reflect a model change from the outside and one to reflect a change from the select boxes.</p>
+
+<blockquote class="box warning">
+  <p>Be careful to set <code>true</code> as second parameter for <code>$scope.$watch('...', function() {}, true)</code>. This signals to do a deep watch. Otherwise the updating won’t work all of the time.</p>
+</blockquote>
+
+<p>The two watches are very similar. If the <code>model</code> attribute changes, we update the select fields. If we change one of
+the select boxes, we update the model. We just have to be careful with the month. The month is inconsistent. While
+days begin with 1, months begin with 0. This means you have to add or subtract 1.</p>
+
+
+
+          <h2>Code</h2>
+
+          <!-- Nav tabs -->
+<a class="btn btn-info pull-right" target="_blank" href="/recipes/date-select/code/">            <span class="fa fa-clone"></span> New window
+</a>
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" href="#tab-result" role="tab" data-toggle="tab">Result</a>
+            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#application-js" role="tab" data-toggle="tab">application.js</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#index-html" role="tab" data-toggle="tab">index.html</a>
+              </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" style="min-height: 300px;">
+            <div role="tabpanel" class="tab-pane active" id="tab-result">
+              <iframe src="code/" id="result"></iframe>
+            </div>
+
+              <div role="tabpanel" class="tab-pane" id="application-js">
+                <pre><code>angular.module(&#x27;cookbookApp&#x27;, [])
+  .directive(&#x27;dateselect&#x27;, function() {
+    return {
+      restrict: &#x27;E&#x27;,
+      template:
+        &#x27;&lt;select ng-model=&quot;date.month&quot; &#x27; +
+          &#x27;ng-options=&quot;month for month in months&quot;&gt;&lt;&#x2F;select&gt;&#x27; +
+          &#x27;&lt;select ng-model=&quot;date.day&quot; &#x27; +
+          &#x27;ng-options=&quot;day for day in days&quot;&gt;&lt;&#x2F;select&gt;&#x27; +
+          &#x27;&lt;select ng-model=&quot;date.year&quot; &#x27; +
+          &#x27;ng-options=&quot;year for year in years&quot;&gt;&lt;&#x2F;select&gt;&#x27;,
+      scope : {
+        model: &#x27;=&#x27;
+      },
+      controller: function($scope) {
+        var i;
+        $scope.date = {};
+
+        $scope.days = [];
+        for (i = 1; i &lt;= 31; i++) { $scope.days.push(i); }
+
+        $scope.months = [];
+        for (i = 1; i &lt;= 12; i++) { $scope.months.push(i); }
+
+        $scope.years = [];
+        for (i = 1980; i &lt;= (new Date().getFullYear()); i++) {
+          $scope.years.push(i);
+        }
+
+        $scope.$watch(&#x27;model&#x27;, function(newDate) {
+          $scope.date.month = newDate.getMonth()+1;
+          $scope.date.day = newDate.getDate();
+          $scope.date.year = newDate.getFullYear();
+        }, true);
+
+        $scope.$watch(&#x27;date&#x27;, function(newDate) {
+          $scope.model.setDate(newDate.day);
+          $scope.model.setMonth(newDate.month-1);
+          $scope.model.setFullYear(newDate.year);
+        }, true);
+      }
+    };
+  })
+  .controller(&#x27;MainController&#x27;, function($scope) {
+    $scope.current = new Date();
+  });
+
+
+</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="index-html">
+                <pre><code>&lt;html ng-app=&quot;cookbookApp&quot;&gt;
+&lt;head&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;ajax.googleapis.com&#x2F;ajax&#x2F;libs&#x2F;angularjs&#x2F;1.3.0&#x2F;angular.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;application.js&quot;&gt;&lt;&#x2F;script&gt;
+&lt;&#x2F;head&gt;
+&lt;body ng-controller=&quot;MainController&quot;&gt;
+  &lt;dateselect model=&quot;current&quot;&gt;&lt;&#x2F;dateselect&gt;&lt;br&#x2F;&gt;
+  &lt;dateselect model=&quot;current&quot;&gt;&lt;&#x2F;dateselect&gt;&lt;br&#x2F;&gt;
+
+  {{current | date:&#x27;yyyy-MM-dd&#x27;}}
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;</code></pre>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <ul class="list-inline">
+      <li><a href="http://angularjs.de/datenschutz" target="_blank">Datenschutz</a></li>
+      <li><a href="http://angularjs.de/impressum" target="_blank">Impressum</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

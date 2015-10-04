@@ -1,0 +1,270 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS Cookbook → Slide right/left with animations</title>
+  <link href="/assets/stylesheets/application.css" rel="stylesheet" type="text/css" />
+  <script src="/assets/javascripts/application.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-39010393-4', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  <nav class="navbar navbar-light bg-transparent">
+  <div class="container">
+    <a class="navbar-brand" href="/">AngularJS Cookbook</a>
+    <!--<form class="form-inline navbar-form pull-right">-->
+      <!--<input class="form-control" type="text" placeholder="Search">-->
+      <!--<button class="btn btn-success-outline" type="submit">Search</button>-->
+    <!--</form>-->
+  </div>
+</nav>
+
+
+  <div class="header-bg" style="background-color: #3F51B5;"></div>
+
+  <div class="container">
+    <header>
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-xs-12 col-md-8">
+          <h1 class="page-title" style="margin-top: 0px;">
+            <a href="/">Slide right/left with animations</a>
+          </h1>
+          <p class="lead" style="color: #ccc;"></p>
+          <p style="color: #aaa;">by Sascha Brink</p>
+
+          <a target="_blank" class="btn btn-success" href="https://leanpub.com/angularjs-cookbook">Buy this book</a>
+        </div>
+        <div class="hidden-xs hidden-sm col-md-4 text-center">
+          <a target="_blank" href="https://leanpub.com/angularjs-cookbook"><img class="img-shadowed" src="/assets/images/cover-sm.jpg" /></a>
+        </div>
+      </div>
+    </header>
+
+    <br>
+
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-9">
+        
+<h2 id="problem">Problem</h2>
+
+<p>You want to add slide effects for left and right to your ng-view div.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>With a little trick, ng-animate will do all the heavy lifting for us. The idea is to set a variable for the direction before the url is changed. The animation direction depends on a css class, which is altered when the direction changes.</p>
+
+<h3 id="step-1-the-styling">Step 1: The styling</h3>
+
+<p>First we need some styling for the slide effects and a container to wrap them:</p>
+
+<pre><code>.container {
+  position:relative; overflow:hidden;
+  border: 1px solid black; height:100px;
+}
+
+.slide-left, .slide-right {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%; padding: 10px;
+}
+
+.slide-left.ng-enter, .slide-left.ng-leave,
+.slide-right.ng-enter, .slide-right.ng-leave {
+  -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) .5s;
+  -moz-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) .5s;
+  -o-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) .5s;
+  transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) .5s;
+}
+
+.slide-left.ng-enter { left: 100%; }
+.slide-left.ng-enter.ng-enter-active { left: 0; }
+.slide-left.ng-leave { left: 0; }
+.slide-left.ng-leave.ng-leave-active { left: -100%; }
+
+.slide-right.ng-enter { left: -100%; }
+.slide-right.ng-enter.ng-enter-active { left: 0; }
+.slide-right.ng-leave { left: 0; }
+.slide-right.ng-leave.ng-leave-active { left: 100%; }
+</code></pre>
+
+<p>The container has to have <code>position: absolute or relative</code>. For the slide classes you have to use <code>position: absolute</code>. For left
+and right sliding, we define <code>slide-left</code> and <code>slide-right</code> with additional classes for <a target="_blank" href="http://docs.angularjs.org/api/ngAnimate.$animate">ng-animate</a>.</p>
+
+<h3 id="step-2-the-code">Step 2: The code</h3>
+
+<p>For demo purposes, we define two sample routes with direct template declaration using <code>$routeProvider</code>. For the left and right slide, we define two functions in a controller, <code>moveLeft</code> and <code>moveRight</code>. With <code>$location</code> service, we can change the url from a controller.</p>
+
+<pre><code>angular.module('cookbookApp', ['ngRoute', 'ngAnimate'])
+  .config(function($routeProvider) {
+    $routeProvider
+      .when('/1', { template: '&lt;h1&gt;first page&lt;/h1&gt;' })
+      .when('/2', { template: '&lt;h1&gt;second page&lt;/h1&gt;' })
+      .otherwise({redirectTo: '/1' });
+  })
+  .controller('MainController', function($scope, $location) {
+    $scope.moveLeft = function(href) {
+      $scope.direction = 'left';
+      $location.path(href);
+    };
+
+    $scope.moveRight = function(href) {
+      $scope.direction = 'right';
+      $location.path(href);
+    };
+  });
+
+
+</code></pre>
+
+<blockquote class="box warning">
+  <p>Make sure you included ngRoute and ngAnimate!</p>
+</blockquote>
+
+<h3 id="step-3-the-markup">Step 3: The markup</h3>
+
+<p>In the app code itself we use the defined methods for the links with <code>ng-click="moveRight('/1')"</code>. Depending on the direction variable, <code>ng-view</code> gets the right animation with <code>ng-class="'slide-'+direction"</code>.</p>
+
+<pre><code>&lt;html ng-app="cookbookApp"&gt;
+&lt;head&gt;
+  &lt;script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"&gt;&lt;/script&gt;
+  &lt;script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-route.min.js"&gt;&lt;/script&gt;
+  &lt;script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-animate.min.js"&gt;&lt;/script&gt;
+  &lt;script src="application.js"&gt;&lt;/script&gt;
+  &lt;link rel="stylesheet" href="style.css"/&gt;
+&lt;/head&gt;
+&lt;body ng-controller="MainController"&gt;
+  &lt;a href ng-click="moveRight('/1')"&gt;Page 1&lt;/a&gt;
+  &lt;a href ng-click="moveLeft('/2')"&gt;Page 2&lt;/a&gt;
+
+  &lt;div class="container"&gt;
+    &lt;div ng-view ng-class="'slide-'+direction"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+
+
+          <h2>Code</h2>
+
+          <!-- Nav tabs -->
+<a class="btn btn-info pull-right" target="_blank" href="/recipes/ng-view-slide-animation/code/">            <span class="fa fa-clone"></span> New window
+</a>
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" href="#tab-result" role="tab" data-toggle="tab">Result</a>
+            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#application-js" role="tab" data-toggle="tab">application.js</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#index-html" role="tab" data-toggle="tab">index.html</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#style-css" role="tab" data-toggle="tab">style.css</a>
+              </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" style="min-height: 300px;">
+            <div role="tabpanel" class="tab-pane active" id="tab-result">
+              <iframe src="code/" id="result"></iframe>
+            </div>
+
+              <div role="tabpanel" class="tab-pane" id="application-js">
+                <pre><code>angular.module(&#x27;cookbookApp&#x27;, [&#x27;ngRoute&#x27;, &#x27;ngAnimate&#x27;])
+  .config(function($routeProvider) {
+    $routeProvider
+      .when(&#x27;&#x2F;1&#x27;, { template: &#x27;&lt;h1&gt;first page&lt;&#x2F;h1&gt;&#x27; })
+      .when(&#x27;&#x2F;2&#x27;, { template: &#x27;&lt;h1&gt;second page&lt;&#x2F;h1&gt;&#x27; })
+      .otherwise({redirectTo: &#x27;&#x2F;1&#x27; });
+  })
+  .controller(&#x27;MainController&#x27;, function($scope, $location) {
+    $scope.moveLeft = function(href) {
+      $scope.direction = &#x27;left&#x27;;
+      $location.path(href);
+    };
+
+    $scope.moveRight = function(href) {
+      $scope.direction = &#x27;right&#x27;;
+      $location.path(href);
+    };
+  });
+
+
+</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="index-html">
+                <pre><code>&lt;html ng-app=&quot;cookbookApp&quot;&gt;
+&lt;head&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;ajax.googleapis.com&#x2F;ajax&#x2F;libs&#x2F;angularjs&#x2F;1.3.0&#x2F;angular.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;ajax.googleapis.com&#x2F;ajax&#x2F;libs&#x2F;angularjs&#x2F;1.3.0&#x2F;angular-route.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;ajax.googleapis.com&#x2F;ajax&#x2F;libs&#x2F;angularjs&#x2F;1.3.0&#x2F;angular-animate.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;application.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&#x2F;&gt;
+&lt;&#x2F;head&gt;
+&lt;body ng-controller=&quot;MainController&quot;&gt;
+  &lt;a href ng-click=&quot;moveRight(&#x27;&#x2F;1&#x27;)&quot;&gt;Page 1&lt;&#x2F;a&gt;
+  &lt;a href ng-click=&quot;moveLeft(&#x27;&#x2F;2&#x27;)&quot;&gt;Page 2&lt;&#x2F;a&gt;
+
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div ng-view ng-class=&quot;&#x27;slide-&#x27;+direction&quot;&gt;&lt;&#x2F;div&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="style-css">
+                <pre><code>.container {
+  position:relative; overflow:hidden;
+  border: 1px solid black; height:100px;
+}
+
+.slide-left, .slide-right {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%; padding: 10px;
+}
+
+.slide-left.ng-enter, .slide-left.ng-leave,
+.slide-right.ng-enter, .slide-right.ng-leave {
+  -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) .5s;
+  -moz-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) .5s;
+  -o-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) .5s;
+  transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) .5s;
+}
+
+.slide-left.ng-enter { left: 100%; }
+.slide-left.ng-enter.ng-enter-active { left: 0; }
+.slide-left.ng-leave { left: 0; }
+.slide-left.ng-leave.ng-leave-active { left: -100%; }
+
+.slide-right.ng-enter { left: -100%; }
+.slide-right.ng-enter.ng-enter-active { left: 0; }
+.slide-right.ng-leave { left: 0; }
+.slide-right.ng-leave.ng-leave-active { left: 100%; }</code></pre>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <ul class="list-inline">
+      <li><a href="http://angularjs.de/datenschutz" target="_blank">Datenschutz</a></li>
+      <li><a href="http://angularjs.de/impressum" target="_blank">Impressum</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

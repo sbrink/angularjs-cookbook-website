@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS Cookbook → Testing for focus in a directive</title>
+  <link href="/assets/stylesheets/application.css" rel="stylesheet" type="text/css" />
+  <script src="/assets/javascripts/application.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-39010393-4', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  <nav class="navbar navbar-light bg-transparent">
+  <div class="container">
+    <a class="navbar-brand" href="/">AngularJS Cookbook</a>
+    <!--<form class="form-inline navbar-form pull-right">-->
+      <!--<input class="form-control" type="text" placeholder="Search">-->
+      <!--<button class="btn btn-success-outline" type="submit">Search</button>-->
+    <!--</form>-->
+  </div>
+</nav>
+
+
+  <div class="header-bg" style="background-color: #3F51B5;"></div>
+
+  <div class="container">
+    <header>
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-xs-12 col-md-8">
+          <h1 class="page-title" style="margin-top: 0px;">
+            <a href="/">Testing for focus in a directive</a>
+          </h1>
+          <p class="lead" style="color: #ccc;"></p>
+          <p style="color: #aaa;">by Sascha Brink</p>
+
+          <a target="_blank" class="btn btn-success" href="https://leanpub.com/angularjs-cookbook">Buy this book</a>
+        </div>
+        <div class="hidden-xs hidden-sm col-md-4 text-center">
+          <a target="_blank" href="https://leanpub.com/angularjs-cookbook"><img class="img-shadowed" src="/assets/images/cover-sm.jpg" /></a>
+        </div>
+      </div>
+    </header>
+
+    <br>
+
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-9">
+        
+<h2 id="problem">Problem</h2>
+
+<p>You want to test focus on an element.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>The trick here is to append the element you want to test to the body. You can only test focus on elements that are bound to the DOM.</p>
+
+<p>In this example, we take a simple directive, which gets the focus. We first create a new scope and a template with our focus directive. After we have compiled it, we attach it to the body. Checks on focus are working now.</p>
+
+<pre><code>it('should focus the input field', inject(function ($rootScope, $compile, $document) {
+  var scope = $rootScope.$new();
+  var template = '&lt;input type="text" autofocus /&gt;';
+  var element = $compile(template)(scope);
+  $document.find('body').append(element);
+  scope.$apply();
+
+  expect($document.activeElement).toBeUndefined();
+  $document.find('input')[0].focus();
+  expect($document.activeElement).toBe(element);
+}));
+</code></pre>
+
+
+
+          <h2>Code</h2>
+
+          <!-- Nav tabs -->
+<a class="btn btn-info pull-right" target="_blank" href="/recipes/testing-for-focus-in-a-directive/code/">            <span class="fa fa-clone"></span> New window
+</a>
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" href="#tab-result" role="tab" data-toggle="tab">Result</a>
+            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#application-js" role="tab" data-toggle="tab">application.js</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#application-spec-js" role="tab" data-toggle="tab">application.spec.js</a>
+              </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" style="min-height: 300px;">
+            <div role="tabpanel" class="tab-pane active" id="tab-result">
+              <iframe src="code/" id="result"></iframe>
+            </div>
+
+              <div role="tabpanel" class="tab-pane" id="application-js">
+                <pre><code>angular.module(&#x27;focusApp&#x27;, [])
+  .directive(&#x27;focusMe&#x27;, function() {
+    return {
+      link: function (scope, element) {
+        element[0].focus();
+      }
+    };
+  });</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="application-spec-js">
+                <pre><code>describe(&#x27;Focus Directive&#x27;, function () {
+  beforeEach(angular.mock.module(&#x27;focusApp&#x27;));
+
+  it(&#x27;should focus the input field&#x27;, inject(function ($rootScope, $compile, $document) {
+    var scope = $rootScope.$new();
+    var template = &#x27;&lt;input type=&quot;text&quot; autofocus &#x2F;&gt;&#x27;;
+    var element = $compile(template)(scope);
+    $document.find(&#x27;body&#x27;).append(element);
+    scope.$apply();
+
+    expect($document.activeElement).toBeUndefined();
+    $document.find(&#x27;input&#x27;)[0].focus();
+    expect($document.activeElement).toBe(element);
+  }));
+
+});</code></pre>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <ul class="list-inline">
+      <li><a href="http://angularjs.de/datenschutz" target="_blank">Datenschutz</a></li>
+      <li><a href="http://angularjs.de/impressum" target="_blank">Impressum</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

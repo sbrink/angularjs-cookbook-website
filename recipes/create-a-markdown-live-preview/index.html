@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS Cookbook → Create a markdown live preview</title>
+  <link href="/assets/stylesheets/application.css" rel="stylesheet" type="text/css" />
+  <script src="/assets/javascripts/application.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-39010393-4', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  <nav class="navbar navbar-light bg-transparent">
+  <div class="container">
+    <a class="navbar-brand" href="/">AngularJS Cookbook</a>
+    <!--<form class="form-inline navbar-form pull-right">-->
+      <!--<input class="form-control" type="text" placeholder="Search">-->
+      <!--<button class="btn btn-success-outline" type="submit">Search</button>-->
+    <!--</form>-->
+  </div>
+</nav>
+
+
+  <div class="header-bg" style="background-color: #3F51B5;"></div>
+
+  <div class="container">
+    <header>
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-xs-12 col-md-8">
+          <h1 class="page-title" style="margin-top: 0px;">
+            <a href="/">Create a markdown live preview</a>
+          </h1>
+          <p class="lead" style="color: #ccc;"></p>
+          <p style="color: #aaa;">by Sascha Brink</p>
+
+          <a target="_blank" class="btn btn-success" href="https://leanpub.com/angularjs-cookbook">Buy this book</a>
+        </div>
+        <div class="hidden-xs hidden-sm col-md-4 text-center">
+          <a target="_blank" href="https://leanpub.com/angularjs-cookbook"><img class="img-shadowed" src="/assets/images/cover-sm.jpg" /></a>
+        </div>
+      </div>
+    </header>
+
+    <br>
+
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-9">
+        
+<h2 id="problem">Problem</h2>
+
+<p>You’re using markdown somewhere in your application. Users, who edit the markdown templates, should see a live preview
+of the resulting html.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>In this example, we implement the directive with the <a target="_blank" href="https://github.com/coreyti/showdown">Showdown</a> library, which is a popular markdown interpreter.</p>
+
+<p>We create a directive ‘markdownPreview’ that has an isolated scope and takes a model as input attribute. As we create a new tag <code>&lt;markdown-preview&gt;</code>, we have to restrict it to element (E).</p>
+
+<p>In the link function, we’re watching for a change of the model attribute and convert the markdown input to an html output. The result is pasted into the elements inner html.</p>
+
+<pre><code>angular.module('cookbookApp', [])
+  .directive('markdownPreview', function() {
+    var converter = new Showdown.converter();
+    return {
+      restrict: 'E',
+      scope : {
+        model: '='
+      },
+      link: function(scope, element) {
+        scope.$watch('model', function(markdownText){
+          var resultHtml = converter.makeHtml(markdownText || '');
+          element.html(resultHtml);
+        });
+      }
+    };
+  });
+
+</code></pre>
+
+<pre><code>&lt;html ng-app="cookbookApp"&gt;
+&lt;head&gt;
+  &lt;script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"&gt;&lt;/script&gt;
+  &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"&gt;&lt;/script&gt;
+  &lt;script src="application.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;textarea ng-model="markdown" cols="60" rows="10"&gt;&lt;/textarea&gt;
+  &lt;markdown-preview model="markdown"&gt;&lt;/markdown-preview&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<h2 id="discussion">Discussion</h2>
+
+<p>Quite often there are more solutions to one problem. If you want, you can also implement the markdown as a filter instead of directive. But be aware, that you have to include the <code>ngSanitize</code> module and use <code>ng-bind-html</code>. Otherwise, your resulting html will be escaped.</p>
+
+
+
+          <h2>Code</h2>
+
+          <!-- Nav tabs -->
+<a class="btn btn-info pull-right" target="_blank" href="/recipes/create-a-markdown-live-preview/code/">            <span class="fa fa-clone"></span> New window
+</a>
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" href="#tab-result" role="tab" data-toggle="tab">Result</a>
+            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#application-js" role="tab" data-toggle="tab">application.js</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#index-html" role="tab" data-toggle="tab">index.html</a>
+              </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" style="min-height: 300px;">
+            <div role="tabpanel" class="tab-pane active" id="tab-result">
+              <iframe src="code/" id="result"></iframe>
+            </div>
+
+              <div role="tabpanel" class="tab-pane" id="application-js">
+                <pre><code>angular.module(&#x27;cookbookApp&#x27;, [])
+  .directive(&#x27;markdownPreview&#x27;, function() {
+    var converter = new Showdown.converter();
+    return {
+      restrict: &#x27;E&#x27;,
+      scope : {
+        model: &#x27;=&#x27;
+      },
+      link: function(scope, element) {
+        scope.$watch(&#x27;model&#x27;, function(markdownText){
+          var resultHtml = converter.makeHtml(markdownText || &#x27;&#x27;);
+          element.html(resultHtml);
+        });
+      }
+    };
+  });
+
+</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="index-html">
+                <pre><code>&lt;html ng-app=&quot;cookbookApp&quot;&gt;
+&lt;head&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;ajax.googleapis.com&#x2F;ajax&#x2F;libs&#x2F;angularjs&#x2F;1.3.0&#x2F;angular.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;cdnjs.cloudflare.com&#x2F;ajax&#x2F;libs&#x2F;showdown&#x2F;0.3.1&#x2F;showdown.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;application.js&quot;&gt;&lt;&#x2F;script&gt;
+&lt;&#x2F;head&gt;
+&lt;body&gt;
+  &lt;textarea ng-model=&quot;markdown&quot; cols=&quot;60&quot; rows=&quot;10&quot;&gt;&lt;&#x2F;textarea&gt;
+  &lt;markdown-preview model=&quot;markdown&quot;&gt;&lt;&#x2F;markdown-preview&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;</code></pre>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <ul class="list-inline">
+      <li><a href="http://angularjs.de/datenschutz" target="_blank">Datenschutz</a></li>
+      <li><a href="http://angularjs.de/impressum" target="_blank">Impressum</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

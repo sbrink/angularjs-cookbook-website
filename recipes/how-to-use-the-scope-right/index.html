@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS Cookbook → How to use the scope right</title>
+  <link href="/assets/stylesheets/application.css" rel="stylesheet" type="text/css" />
+  <script src="/assets/javascripts/application.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-39010393-4', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  <nav class="navbar navbar-light bg-transparent">
+  <div class="container">
+    <a class="navbar-brand" href="/">AngularJS Cookbook</a>
+    <!--<form class="form-inline navbar-form pull-right">-->
+      <!--<input class="form-control" type="text" placeholder="Search">-->
+      <!--<button class="btn btn-success-outline" type="submit">Search</button>-->
+    <!--</form>-->
+  </div>
+</nav>
+
+
+  <div class="header-bg" style="background-color: #3F51B5;"></div>
+
+  <div class="container">
+    <header>
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-xs-12 col-md-8">
+          <h1 class="page-title" style="margin-top: 0px;">
+            <a href="/">How to use the scope right</a>
+          </h1>
+          <p class="lead" style="color: #ccc;"></p>
+          <p style="color: #aaa;">by Sascha Brink</p>
+
+          <a target="_blank" class="btn btn-success" href="https://leanpub.com/angularjs-cookbook">Buy this book</a>
+        </div>
+        <div class="hidden-xs hidden-sm col-md-4 text-center">
+          <a target="_blank" href="https://leanpub.com/angularjs-cookbook"><img class="img-shadowed" src="/assets/images/cover-sm.jpg" /></a>
+        </div>
+      </div>
+    </header>
+
+    <br>
+
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-9">
+        
+<h2 id="problem">Problem</h2>
+
+<p>You are wondering about placing variables and functions on the scope or you have the problem, that your app is getting slower and slower.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>This one should be a no-brainer, but it seems that it isn’t.</p>
+
+<p><strong>Only variables and functions that you need in your view belong on the scope.</strong></p>
+
+<h2 id="discussion">Discussion</h2>
+
+<p>Why is this important? Remember that the scope is a link between data structures and the view. For the two-way data
+binding to work, AngularJS has to find out when the model changed so that the view can be updated.</p>
+
+<p>AngularJS does this through dirty checking. If we make it simple, it means: Compare the current scope with an old version of the scope. So everything on the scope, whether it can be updated in the view or not, is compared.</p>
+
+<p>You may look at the following example, in which we only print one random user on the screen.</p>
+
+<p>The view:</p>
+
+<pre><code>&lt;body ng-controller="MainController"&gt;
+ {{getRandomUser()}}
+&lt;/body&gt;
+</code></pre>
+
+<p>What you can often see, is a controller like this:</p>
+
+<pre><code>.controller(function() {
+  $scope.users = ['Bill', 'John', ... ];
+
+  $scope.getRandomUser = function() {
+    return $scope.users[Math.floor(Math.random()*$scope.users.length)];
+  };
+}
+</code></pre>
+
+<p>What’s wrong with this? In the view, only one random user is ever shown. But the dirty checking of AngularJS every time checks <code>$scope
+.users</code>, because it is on the scope. It checks for a change of <code>$scope.users</code> so that the view can be updated
+accordingly and it doesn’t use <code>users</code>. So the checking has no use. This can be a huge cost, if it’s a large array or complex object.</p>
+
+<p>The right solution:</p>
+
+<pre><code>.controller(function() {
+  var users = ['Bill', 'John', ... ];
+
+  $scope.getRandomUser = function() {
+    return users[Math.floor(Math.random()*users.length)];
+  };
+}
+</code></pre>
+
+<p>Here we store users as a normal variable. The dirty checking only checks for changes on <code>$scope.getRandomUser()</code>, which is right, because it’s visible in the view.</p>
+
+
+
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <ul class="list-inline">
+      <li><a href="http://angularjs.de/datenschutz" target="_blank">Datenschutz</a></li>
+      <li><a href="http://angularjs.de/impressum" target="_blank">Impressum</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

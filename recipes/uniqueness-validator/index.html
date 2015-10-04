@@ -1,0 +1,271 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS Cookbook → General purpose uniqueness validator</title>
+  <link href="/assets/stylesheets/application.css" rel="stylesheet" type="text/css" />
+  <script src="/assets/javascripts/application.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-39010393-4', 'auto');
+  ga('send', 'pageview');
+</script>
+
+  <nav class="navbar navbar-light bg-transparent">
+  <div class="container">
+    <a class="navbar-brand" href="/">AngularJS Cookbook</a>
+    <!--<form class="form-inline navbar-form pull-right">-->
+      <!--<input class="form-control" type="text" placeholder="Search">-->
+      <!--<button class="btn btn-success-outline" type="submit">Search</button>-->
+    <!--</form>-->
+  </div>
+</nav>
+
+
+  <div class="header-bg" style="background-color: #3F51B5;"></div>
+
+  <div class="container">
+    <header>
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-xs-12 col-md-8">
+          <h1 class="page-title" style="margin-top: 0px;">
+            <a href="/">General purpose uniqueness validator</a>
+          </h1>
+          <p class="lead" style="color: #ccc;"></p>
+          <p style="color: #aaa;">by Sascha Brink</p>
+
+          <a target="_blank" class="btn btn-success" href="https://leanpub.com/angularjs-cookbook">Buy this book</a>
+        </div>
+        <div class="hidden-xs hidden-sm col-md-4 text-center">
+          <a target="_blank" href="https://leanpub.com/angularjs-cookbook"><img class="img-shadowed" src="/assets/images/cover-sm.jpg" /></a>
+        </div>
+      </div>
+    </header>
+
+    <br>
+
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-10 col-lg-9">
+        
+<h2 id="problem">Problem</h2>
+
+<p>You want to check, if the input in an form field is unique, e.g. a login box.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>To solve this problem, we have to write a custom validator. A validator is no more than a directive, which includes a special controller.</p>
+
+<p>As an example, we take the following excerpt from the <code>index.html</code>:</p>
+
+<pre><code>&lt;input type="text" name="login" ng-model="login"
+       unique="checkUniqueLogin" required /&gt;
+</code></pre>
+
+<p>The attribute <code>unique</code> will be our directive and <code>checkUniqueLogin</code> is a function that has to exist on the current scope. This function is called with the value of <code>login</code> and returns a promise with either <code>true</code> or <code>false</code> depending on the result of the check.</p>
+
+<p>The interesting part here is the <code>unique</code> directive. First, <code>ngModel</code> is required. This means, that
+we expect a <code>ng-model</code> attribute in the same tag and want to share its controller. We then can access the controller in the link function as the 4th parameter, which we call <code>ngModelCtrl</code>. The <code>ngModelCtrl</code> has a set of helper function for form validation. In the <code>$parsers</code> function we check, if the current value has been changed. If it has changed, we call the function that we passed to the <code>unique</code> attribute with value as parameter and expect a promise as return value.</p>
+
+<p>We can call a method from the controller here, because the scope is not isolated. Now we just have to make sure, that the <code>checkUniqueLogin</code> in the controller returns a promise, which is either true or false.</p>
+
+<pre><code>&lt;html ng-app="cookbookApp"&gt;
+&lt;head&gt;
+  &lt;script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"&gt;&lt;/script&gt;
+  &lt;script src="application.js"&gt;&lt;/script&gt;
+  &lt;link rel="stylesheet" ng-href="style.css"/&gt;
+&lt;/head&gt;
+&lt;body ng-controller="MainController"&gt;
+  &lt;p&gt;Try &lt;strong&gt;bloodymary&lt;/strong&gt; as login.&lt;/p&gt;
+
+  &lt;form name="form" novalidate&gt;
+    &lt;label&gt;Login:&lt;/label&gt;
+    &lt;input type="text" name="login" ng-model="login"
+           unique="checkUniqueLogin" required/&gt;
+  &lt;/form&gt;
+
+  &lt;div ng-show="form.login.$dirty &amp;&amp; form.login.$invalid"&gt;Invalid:
+    &lt;span ng-show="form.login.$error.required"&gt;Choose a login.&lt;/span&gt;
+    &lt;span ng-show="form.login.$error.unique"&gt;Login already taken.&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<pre><code>angular.module('cookbookApp', [])
+  .directive('unique', function () {
+    return {
+      require:'ngModel',
+      link: function (scope, element, attrs, ngModelCtrl) {
+        var original;
+        ngModelCtrl.$formatters.unshift(function(modelValue) {
+          original = modelValue;
+          return modelValue;
+        });
+        ngModelCtrl.$parsers.push(function (value) {
+          if (value &amp;&amp; value !== original) {
+            scope[attrs.unique](value).then(function(result) {
+              ngModelCtrl.$setValidity('unique', result);
+            });
+            return value;
+          }
+        });
+      }
+    };
+  })
+  .controller('MainController', function($scope, $http) {
+    $scope.checkUniqueLogin = function(value) {
+      return $http.get('users.json').then(function(usersResponse) {
+        return !usersResponse.data.filter(function(user){
+          return user.login === value;
+        }).length;
+      });
+    };
+  });
+</code></pre>
+
+<pre><code>[
+  { "name": "John", "login": "johndoe" },
+  { "name": "Anne", "login": "awesomeanne" },
+  { "name": "Phil", "login": "justphil" },
+  { "name": "Mary", "login": "bloodymary" }
+]
+</code></pre>
+
+<pre><code>input.ng-invalid.ng-dirty {
+  background-color: #ffc4d0;
+}
+
+input.ng-valid.ng-dirty {
+  background-color: #d8ffd0;
+}
+</code></pre>
+
+
+
+          <h2>Code</h2>
+
+          <!-- Nav tabs -->
+<a class="btn btn-info pull-right" target="_blank" href="/recipes/uniqueness-validator/code/">            <span class="fa fa-clone"></span> New window
+</a>
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" href="#tab-result" role="tab" data-toggle="tab">Result</a>
+            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#application-js" role="tab" data-toggle="tab">application.js</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#index-html" role="tab" data-toggle="tab">index.html</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#style-css" role="tab" data-toggle="tab">style.css</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#users-json" role="tab" data-toggle="tab">users.json</a>
+              </li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content" style="min-height: 300px;">
+            <div role="tabpanel" class="tab-pane active" id="tab-result">
+              <iframe src="code/" id="result"></iframe>
+            </div>
+
+              <div role="tabpanel" class="tab-pane" id="application-js">
+                <pre><code>angular.module(&#x27;cookbookApp&#x27;, [])
+  .directive(&#x27;unique&#x27;, function () {
+    return {
+      require:&#x27;ngModel&#x27;,
+      link: function (scope, element, attrs, ngModelCtrl) {
+        var original;
+        ngModelCtrl.$formatters.unshift(function(modelValue) {
+          original = modelValue;
+          return modelValue;
+        });
+        ngModelCtrl.$parsers.push(function (value) {
+          if (value &amp;&amp; value !== original) {
+            scope[attrs.unique](value).then(function(result) {
+              ngModelCtrl.$setValidity(&#x27;unique&#x27;, result);
+            });
+            return value;
+          }
+        });
+      }
+    };
+  })
+  .controller(&#x27;MainController&#x27;, function($scope, $http) {
+    $scope.checkUniqueLogin = function(value) {
+      return $http.get(&#x27;users.json&#x27;).then(function(usersResponse) {
+        return !usersResponse.data.filter(function(user){
+          return user.login === value;
+        }).length;
+      });
+    };
+  });</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="index-html">
+                <pre><code>&lt;html ng-app=&quot;cookbookApp&quot;&gt;
+&lt;head&gt;
+  &lt;script src=&quot;https:&#x2F;&#x2F;ajax.googleapis.com&#x2F;ajax&#x2F;libs&#x2F;angularjs&#x2F;1.3.0&#x2F;angular.min.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;script src=&quot;application.js&quot;&gt;&lt;&#x2F;script&gt;
+  &lt;link rel=&quot;stylesheet&quot; ng-href=&quot;style.css&quot;&#x2F;&gt;
+&lt;&#x2F;head&gt;
+&lt;body ng-controller=&quot;MainController&quot;&gt;
+  &lt;p&gt;Try &lt;strong&gt;bloodymary&lt;&#x2F;strong&gt; as login.&lt;&#x2F;p&gt;
+
+  &lt;form name=&quot;form&quot; novalidate&gt;
+    &lt;label&gt;Login:&lt;&#x2F;label&gt;
+    &lt;input type=&quot;text&quot; name=&quot;login&quot; ng-model=&quot;login&quot;
+           unique=&quot;checkUniqueLogin&quot; required&#x2F;&gt;
+  &lt;&#x2F;form&gt;
+
+  &lt;div ng-show=&quot;form.login.$dirty &amp;&amp; form.login.$invalid&quot;&gt;Invalid:
+    &lt;span ng-show=&quot;form.login.$error.required&quot;&gt;Choose a login.&lt;&#x2F;span&gt;
+    &lt;span ng-show=&quot;form.login.$error.unique&quot;&gt;Login already taken.&lt;&#x2F;span&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="style-css">
+                <pre><code>input.ng-invalid.ng-dirty {
+  background-color: #ffc4d0;
+}
+
+input.ng-valid.ng-dirty {
+  background-color: #d8ffd0;
+}
+</code></pre>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="users-json">
+                <pre><code>[
+  { &quot;name&quot;: &quot;John&quot;, &quot;login&quot;: &quot;johndoe&quot; },
+  { &quot;name&quot;: &quot;Anne&quot;, &quot;login&quot;: &quot;awesomeanne&quot; },
+  { &quot;name&quot;: &quot;Phil&quot;, &quot;login&quot;: &quot;justphil&quot; },
+  { &quot;name&quot;: &quot;Mary&quot;, &quot;login&quot;: &quot;bloodymary&quot; }
+]</code></pre>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <ul class="list-inline">
+      <li><a href="http://angularjs.de/datenschutz" target="_blank">Datenschutz</a></li>
+      <li><a href="http://angularjs.de/impressum" target="_blank">Impressum</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

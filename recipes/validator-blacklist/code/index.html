@@ -1,0 +1,20 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+  <link rel="stylesheet" ng-href="style.css"/>
+</head>
+<body ng-controller="MainController">
+  <p>Try <strong>hello</strong> or <strong>bye</strong>.</p>
+  <form name="form" novalidate>
+    <input type="text" name="name"
+           ng-model="name" blacklist="blacklistValues" />
+  </form>
+
+  <div ng-show="form.name.$dirty">
+    <span ng-show="form.name.$error.blacklist">
+      Your name contains a word from the blacklist.
+    </span>
+  </div>
+</body>
+</html>

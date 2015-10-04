@@ -1,0 +1,16 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="https:////cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.js"></script>
+  <script src="application.js"></script>
+  <link rel="stylesheet" ng-href="https://cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.css"/>
+</head>
+<body>
+  <pre><code class="language-markup">
+    <ul>
+      <li ng-repeat="task in tasks">{{ task }}</li>
+    </ul>
+    <button ng-click="add()">Add task</button>
+  </code></pre>
+</body>
+</html>

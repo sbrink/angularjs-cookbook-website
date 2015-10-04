@@ -1,0 +1,12 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+</head>
+<body ng-controller="MainController">
+  <select ng-model="itemName" ng-options="item for item in items"></select>
+
+  <p>Normal binding: {{itemName}}</p>
+  <p>One-time binding: {{::itemName}}</p>
+</body>
+</html>

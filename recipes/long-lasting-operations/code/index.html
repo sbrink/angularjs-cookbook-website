@@ -1,0 +1,13 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+</head>
+<body ng-controller="MainController">
+  <button ng-click="sortBlocking(items)">Sort blocking</button>
+  <button ng-click="sortNonBlocking(items)">Sort non blocking</button>
+  <ul>
+    <li ng-repeat="item in items" ng-bind="item"></li>
+  </ul>
+</body>
+</html>

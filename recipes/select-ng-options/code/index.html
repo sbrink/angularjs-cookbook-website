@@ -1,0 +1,62 @@
+<html ng-app>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+</head>
+<body>
+  <h2>Array data sources</h2>
+
+  <div ng-init="users = [
+      { id: '800', name: 'Bill Mayer', role: 'Admin' },
+      { id: '801', name: 'Anne Black', role: 'User' }
+  ];">
+
+    <p>custom empty option</p>
+    <select ng-model="choose" ng-options="user.name for user in users">
+      <option value="">- Choose user -</option>
+    </select><br>
+
+    <p>label for value in array: {{arr1}}</p>
+    <select ng-model="arr1" ng-options="user.name for user in users"></select><br>
+
+    <p>select as label for value in array: {{arr2}}</p>
+    <select ng-model="arr2" ng-options="user.id as user.name for user in users"></select><br>
+
+    <p>label group by group for value in array: {{arr3}}</p>
+    <select ng-model="arr3" ng-options="user.name group by user.role for user in users"></select><br>
+
+    <p>select as label group by group for value in array: {{arr4}}</p>
+    <select ng-model="arr4" ng-options="user.id as user.name group by user.role for user in users"></select><br>
+
+  </div>
+
+
+  <h2>Object data sources</h2>
+
+  <div ng-init="roles = {
+      150: { name: 'Admin', rights: 'Read+Write' },
+      151: { name: 'User',  rights: 'Read' }
+  };">
+
+    <p>label for (key , value) in object: {{obj1}}</p>
+    <select ng-model="obj1"
+            ng-options="obj.name for (roleId, obj) in roles">
+    </select><br>
+
+    <p>select as label for (key , value) in object: {{obj2}}</p>
+    <select ng-model="obj2"
+            ng-options="id as obj.name for (id, obj) in roles">
+    </select><br>
+
+    <p>label group by group for (key, value) in object: {{obj3}}</p>
+    <select ng-model="obj3"
+            ng-options="obj.name group by obj.rights for (id, obj) in roles">
+    </select><br>
+
+    <p>select as label group by group for (key, value) in object: {{obj4}}</p>
+    <select ng-model="obj4"
+            ng-options="id as obj.name group by obj.rights for (id, obj) in roles">
+    </select><br>
+  </div>
+
+</body>
+</html>

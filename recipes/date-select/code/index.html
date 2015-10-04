@@ -1,0 +1,12 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+</head>
+<body ng-controller="MainController">
+  <dateselect model="current"></dateselect><br/>
+  <dateselect model="current"></dateselect><br/>
+
+  {{current | date:'yyyy-MM-dd'}}
+</body>
+</html>

@@ -1,0 +1,15 @@
+<html ng-app="cookbookApp">
+<head ng-controller="HeadController">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+  <link rel="stylesheet" ng-href="theme-{{getTheme()}}.css"/>
+</head>
+<body ng-controller="MainController">
+  <h1>Hello World</h1>
+  <p>
+    Select theme:
+    <a href ng-click="setTheme('default')">Default</a>
+    <a href ng-click="setTheme('greenish')">Greenish</a>
+  </p>
+</body>
+</html>

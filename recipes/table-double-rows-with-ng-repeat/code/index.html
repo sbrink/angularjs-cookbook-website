@@ -1,0 +1,17 @@
+<html ng-app="cookbookApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+  <script src="application.js"></script>
+</head>
+<body ng-controller="MainController">
+  <table border="1">
+    <tr ng-repeat-start="user in users">
+      <td colspan="2" ng-bind="user.name"></td>
+    </tr>
+    <tr ng-repeat-end>
+      <td ng-bind="user.age"></td>
+      <td ng-bind="user.gender"></td>
+    </tr>
+  </table>
+</body>
+</html>

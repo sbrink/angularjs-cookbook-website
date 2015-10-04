@@ -1,0 +1,16 @@
+th a {
+  display: block;
+  text-decoration: none;
+}
+
+th a.active {
+  background-color: #ccc;
+}
+
+th a.active.asc:after {
+  content: "\2193";
+}
+
+th a.active.desc:after {
+  content: "\2191";
+}
